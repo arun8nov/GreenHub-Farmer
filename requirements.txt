@@ -2,3 +2,6 @@ pandas
 numpy
 pyarrow
 pyspark
+mysql-connector-python
+SQLAlchemy
+python-dotenv
