@@ -6,13 +6,7 @@ from pyspark.sql import SparkSession
 import warnings
 warnings.filterwarnings("ignore")
 
-spark = SparkSession.builder \
-    .appName("GreenHub") \
-    .config(
-        "spark.jars",
-        "D:/spark_jars/mysql-connector-j-9.6.0.jar"
-    ) \
-    .getOrCreate()
+spark = SparkSession.builder.master("local").appName("greenhub-farmer-spark-sesssion").getOrCreate()
 load_dotenv()
 
 db_host = os.getenv("db_host")
@@ -76,18 +70,22 @@ class data_ingestion:
         return df
 
     def data_push(self):
-        engine = self.connections.sql_engine()
+    
         df = self.read_data()
+
         df.write \
         .format("jdbc") \
-        .option("url", f"jdbc:mysql://{db_host}:{db_port}/{db_name}") \
+        .option("url", f"jdbc:mysql://{db_host}:{db_port}/{db_name}?allowPublicKeyRetrieval=true&useSSL=false") \
         .option("dbtable", "devices") \
         .option("user", db_user) \
         .option("password", db_password) \
         .option("driver", "com.mysql.cj.jdbc.Driver") \
-        .mode("overwrite") \
+        .option("batchsize", 10000) \
+        .mode("append") \
         .save()
 
         return "Data Pushed Successfully"
+
+        
 
         
